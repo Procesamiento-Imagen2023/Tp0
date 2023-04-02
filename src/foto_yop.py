@@ -46,6 +46,44 @@ def guardar_imagen():
     # Guardar la imagen
     cv2.imwrite(file_path, img)
 
+# Función para recortar una parte de la imagen
+def crop_image(event, x, y, flags, param):
+    global cropping, x_start, y_start, x_end, y_end
+    # Si se presionó el botón izquierdo del mouse, comenzar a recortar
+    if event == cv2.EVENT_LBUTTONDOWN:
+        cropping = True
+        x_start, y_start = x, y
+    # Si se soltó el botón izquierdo del mouse, terminar el recorte
+    elif event == cv2.EVENT_LBUTTONUP:
+        cropping = False
+        x_end, y_end = x, y
+        # Iniciar el recorte
+        start_cropping()
+
+# Función para realizar el recorte
+def start_cropping():
+    global cropping, x_start, y_start, x_end, y_end, img_color
+    # Definir el área de recorte
+    x = min(x_start, x_end)
+    y = min(y_start, y_end)
+    w = abs(x_end - x_start)
+    h = abs(y_end - y_start)
+    # Recortar la imagen
+    img_cropped = img_color[y:y+h, x:x+w]
+    # Mostrar la imagen recortada en una ventana
+    cv2.imshow("Imagen recortada", img_cropped)
+    # Guardar la imagen recortada
+    file_path = filedialog.asksaveasfilename(defaultextension=".raw")
+    if file_path:
+        with open(file_path, "wb") as f:
+            f.write(img_cropped)
+    # Cerrar la ventana de recorte
+    cv2.destroyWindow("Recorte")
+
+# Asociar la función de recorte a la ventana de imagen
+cv2.namedWindow("Imagen")
+cv2.setMouseCallback("Imagen", crop_image)
+
 # Ventana principal
 principal = tk.Tk()
 principal.title("FotoYop")
@@ -56,6 +94,7 @@ menu_bar = tk.Menu(principal)
 file_menu = tk.Menu(menu_bar, tearoff=0)
 file_menu.add_command(label="Abrir...", command=cargar_imagen_raw)
 file_menu.add_command(label="Guardar...", command=guardar_imagen)
+file_menu.add_command(label="Recortar...", command=start_cropping)
 file_menu.add_separator()
 file_menu.add_command(label="Salir", command=principal.quit)
 menu_bar.add_cascade(label="Archivo", menu=file_menu)
