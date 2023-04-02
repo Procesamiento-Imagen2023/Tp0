@@ -5,7 +5,7 @@ from tkinter import filedialog
 
 # Funcion para cargar la imagen
 def cargar_imagen_raw():
-    file_path = filedialog.askopenfilename(filetypes=[("RAW files", "*.raw")])
+    file_path = filedialog.askopenfilename(filetypes=[("RAW files", "*.raw"),("PGM files", "*.pgm"),("PPM files", "*.ppm")])
     if not file_path:
         return
 
@@ -36,8 +36,9 @@ def cargar_imagen_raw():
         #cv2.imshow(str(file_path), img)
         cv2.namedWindow('Imagen')
         cv2.imshow('Imagen', img)
-        file_menu.entryconfig("Guardar...", state="normal")
-        file_menu.entryconfig("Recortar...", state="normal")
+        file_menu.entryconfig("Guardar", state="normal")
+        file_menu.entryconfig("Recortar", state="normal")
+        file_menu.entryconfig("Ver pixel", state="normal")
 
     boton_aceptar = tk.Button(input_window, text="Aceptar", command=tamanio_imagen)
     boton_aceptar.grid(row=2, column=1)
@@ -87,6 +88,25 @@ def capturar_recorte():
             break
     cv2.destroyAllWindows()
 
+def valor_pixel():
+    def mostrar_valor_pixel(event, x, y, flags, parametros):
+        if event == cv2.EVENT_MOUSEMOVE:
+            valor_pixel = img[y, x]
+            ventana_texto = np.zeros((50, 200), dtype=np.uint8)
+            ventana_texto[:] = 255
+            fuente = cv2.FONT_HERSHEY_SIMPLEX
+            escala_fuente = 0.5
+            grosor_fuente = 1
+            color_fuente = 0
+            texto = f"Valor de gris: {valor_pixel}"
+            cv2.putText(ventana_texto, texto, (10, 25), fuente, escala_fuente, color_fuente, grosor_fuente, cv2.LINE_AA)
+            cv2.imshow('Valor del pixel', ventana_texto)
+        elif event == cv2.EVENT_RBUTTONDOWN:
+                print ("esta es la imagen", img[y, x])
+                img[y, x] = (0)
+                cv2.imshow('Imagen', img)
+
+    cv2.setMouseCallback('Imagen', mostrar_valor_pixel)
 
 # Ventana principal
 principal = tk.Tk()
@@ -96,9 +116,10 @@ principal.geometry("300x300")
 # Menu
 menu_bar = tk.Menu(principal)
 file_menu = tk.Menu(menu_bar, tearoff=0)
-file_menu.add_command(label="Abrir...", command=cargar_imagen_raw)
-file_menu.add_command(label="Guardar...", command=guardar_imagen, state="disabled")
-file_menu.add_command(label="Recortar...", command=capturar_recorte, state="disabled")
+file_menu.add_command(label="Abrir", command=cargar_imagen_raw)
+file_menu.add_command(label="Guardar", command=guardar_imagen, state="disabled")
+file_menu.add_command(label="Recortar", command=capturar_recorte, state="disabled")
+file_menu.add_command(label="Ver pixel", command=valor_pixel, state="disabled")
 file_menu.add_separator()
 file_menu.add_command(label="Salir", command=principal.quit)
 menu_bar.add_cascade(label="Archivo", menu=file_menu)
