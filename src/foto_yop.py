@@ -3,8 +3,8 @@ import numpy as np
 import tkinter as tk
 from tkinter import filedialog
 
+# Funcion para cargar la imagen
 def cargar_imagen_raw():
-    # Ventana cargar imagen
     file_path = filedialog.askopenfilename(filetypes=[("RAW files", "*.raw")])
     if not file_path:
         return
