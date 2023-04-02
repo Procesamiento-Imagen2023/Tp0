@@ -4,7 +4,7 @@ import tkinter as tk
 from tkinter import filedialog
 
 def cargar_imagen_raw():
-    # Ventana principal
+    # Ventana cargar imagen
     file_path = filedialog.askopenfilename(filetypes=[("RAW files", "*.raw")])
     if not file_path:
         return
@@ -30,7 +30,7 @@ def cargar_imagen_raw():
         alto = int(valor_alto.get())
         input_window.destroy()
         
-        # Lee imagen RAW y mostrarla
+        # Leer imagen RAW y mostrarla
         img = np.fromfile(file_path, dtype=np.uint8, count=ancho*alto)
         img = np.reshape(img, (alto, ancho))
         cv2.imshow("Imagen", img)
@@ -38,7 +38,7 @@ def cargar_imagen_raw():
     boton_aceptar = tk.Button(input_window, text="Aceptar", command=tamanio_imagen)
     boton_aceptar.grid(row=2, column=1)
 
-# Función para guardar la imagen
+# Funcion para guardar la imagen
 def guardar_imagen():
     global img
     # Ruta de destino de la imagen
