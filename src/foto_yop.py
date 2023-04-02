@@ -33,18 +33,60 @@ def cargar_imagen_raw():
         # Leer imagen RAW y mostrarla
         img = np.fromfile(file_path, dtype=np.uint8, count=ancho*alto)
         img = np.reshape(img, (alto, ancho))
-        cv2.imshow("Imagen", img)
+        #cv2.imshow(str(file_path), img)
+        cv2.namedWindow('Imagen')
+        cv2.imshow('Imagen', img)
+        file_menu.entryconfig("Guardar...", state="normal")
+        file_menu.entryconfig("Recortar...", state="normal")
 
     boton_aceptar = tk.Button(input_window, text="Aceptar", command=tamanio_imagen)
     boton_aceptar.grid(row=2, column=1)
 
 # Funcion para guardar la imagen
-def guardar_imagen():
-    global img
+def guardar_imagen(imagen = None):
     # Ruta de destino de la imagen
+    if imagen is None:
+        imagen = img
+    
     file_path = filedialog.asksaveasfilename(defaultextension=".jpg", filetypes=[("Imagen JPEG", "*.jpg"), ("Imagen PNG", "*.png")])
     # Guardar la imagen
-    cv2.imwrite(file_path, img)
+    cv2.imwrite(file_path, imagen)
+    
+def capturar_recorte():
+    xI, yI, xF, yF = 0, 0, 0, 0
+    interuptor = False
+
+    def dibujar(event, x, y, flags, param):
+        nonlocal xI, xF, yI, yF, interuptor
+    
+        if event == cv2.EVENT_LBUTTONDOWN:
+            xI, yI = x, y
+            interuptor = False
+
+        if event == cv2.EVENT_LBUTTONUP:
+            xF, yF = x, y
+            interuptor = True
+           
+    cv2.setMouseCallback('Imagen', dibujar)
+
+    while True:
+        if interuptor:
+            cv2.rectangle(img, (xI, yI), (xF, yF), (0, 255, 0), 2)
+            recorte = img[yI:yF, xI:xF]
+            print(recorte)
+            cv2.imshow('Imagen', img)
+            if recorte.shape[0] > 0 and recorte.shape[1] > 0:
+                interuptor = False
+                cv2.rectangle(img, (xI, yI), (xF, yF), (0, 0, 0), 0)
+                cv2.imshow('Imagen nueva', recorte)
+                guardar_imagen(recorte)
+    
+        cv2.imshow('Imagen', img)
+        k = cv2.waitKey(1) & 0xFF
+        if k == 27:
+            break
+    cv2.destroyAllWindows()
+
 
 # Ventana principal
 principal = tk.Tk()
@@ -55,7 +97,8 @@ principal.geometry("300x300")
 menu_bar = tk.Menu(principal)
 file_menu = tk.Menu(menu_bar, tearoff=0)
 file_menu.add_command(label="Abrir...", command=cargar_imagen_raw)
-file_menu.add_command(label="Guardar...", command=guardar_imagen)
+file_menu.add_command(label="Guardar...", command=guardar_imagen, state="disabled")
+file_menu.add_command(label="Recortar...", command=capturar_recorte, state="disabled")
 file_menu.add_separator()
 file_menu.add_command(label="Salir", command=principal.quit)
 menu_bar.add_cascade(label="Archivo", menu=file_menu)
